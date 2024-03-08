@@ -205,6 +205,70 @@ sum(is.na(warfarin_incomp$WT)) # equals 15 - approximately 50% of the baseline
 # exactly 46.9%
 
 
+# 040324 - Generate datasets with 20, 50 and 80% WT missing -------------------- 
+
+# 20% missing WT
+
+warfarin_miss_20 <- produce_NA(warfarin_pk_baseline, mechanism="MAR", perc.missing = 0.20, 
+                               idx.incomplete = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), 
+                               idx.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), 
+                               weights.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1/2, 1/2)
+                               ,logit.model = "RIGHT",seed=123)
+
+warfarin_incomp_20 <- warfarin_miss_20$data.incomp # extract the incomplete data
+
+sum(is.na(warfarin_incomp_20$WT)) # equals 6 - 18.8% WT missing
+
+# 30% missing WT
+
+warfarin_miss_30 <- produce_NA(warfarin_pk_baseline, mechanism="MAR", perc.missing = 0.45, 
+                               idx.incomplete = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), 
+                               idx.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), 
+                               weights.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1/2, 1/2)
+                               ,logit.model = "RIGHT",seed=123)
+
+warfarin_incomp_30 <- warfarin_miss_30$data.incomp # extract the incomplete data
+
+sum(is.na(warfarin_incomp_30$WT)) # equals 10 - 31.2% WT missing
+
+# 50% missing WT
+
+warfarin_miss_50 <- produce_NA(warfarin_pk_baseline, mechanism="MAR", perc.missing = 0.583, 
+                               idx.incomplete = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), 
+                               idx.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), 
+                               weights.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1/2, 1/2)
+                               ,logit.model = "RIGHT",seed=123)
+
+warfarin_incomp_50 <- warfarin_miss_50$data.incomp # extract the incomplete data
+
+sum(is.na(warfarin_incomp_50$WT)) # equals 16 - exactly 50% WT missing
+
+# 70% missing WT
+
+warfarin_miss_70 <- produce_NA(warfarin_pk_baseline, mechanism="MAR", perc.missing = 0.6701, 
+                               idx.incomplete = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), 
+                               idx.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), 
+                               weights.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1/3, 2/3)
+                               ,logit.model = "RIGHT",seed=123)
+
+warfarin_incomp_70 <- warfarin_miss_70$data.incomp # extract the incomplete data
+
+sum(is.na(warfarin_incomp_70$WT)) # equals 16 - exactly 50% WT missing
+
+# I will try 80% anyway, as 70% does not work!
+
+# 80% missing WT
+
+warfarin_miss_80 <- produce_NA(warfarin_pk_baseline, mechanism="MAR", perc.missing = 0.73, 
+                               idx.incomplete = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), 
+                               idx.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1), 
+                               weights.covariates = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1/2, 1/2)
+                               ,logit.model = "RIGHT",seed=123)
+
+warfarin_incomp_80 <- warfarin_miss_80$data.incomp # extract the incomplete data
+
+sum(is.na(warfarin_incomp_80$WT)) # equals 25 - 78.1% WT missing
+
 ### Now perform data analysis --------------------------------------------------
 
 ## First, with the complete data -----------------------------------------------
@@ -224,26 +288,33 @@ write.csv(warfarin_pk, "warfarin_auth.csv",quote = F, row.names = F)
 
 median(warfarin_pk_baseline$WT) # equals 71.7
 
+summary(warfarin_pk_baseline$WT) # check the range as well
+
+# 010324 - also check the mean (sd) of body weight
+
+shapiro.test(warfarin_pk_baseline$WT) # p-value = 0.97891, normal
+
+mean(warfarin_pk_baseline$WT) # equals 72.3
+
+sd(warfarin_pk_baseline$WT) # equals 12.7
+
 
 ## Second, with the complete case analysis -------------------------------------
+
 
 # Remove from warfarin_pk rows that has ID with missing WT in warfarin_incomp
 
 warfarin_pk_cc <- warfarin_pk %>% filter(!(ID %in% warfarin_incomp$ID[is.na(warfarin_incomp$WT)]))
 
+# 040324 - I do it for the 3 scenarios, 20, 50 and 80% missing WT
 
-# The following is incorrect with regard to complete case analysis because if I code like -99 TVCL = THETA(2), 
-# then it equals to setting those missing values to the median. Instead I should just remove those rows with missing WT as I did at the very beginning!
+warfarin_pk_cc_20 <- warfarin_pk %>% filter(!(ID %in% warfarin_incomp_20$ID[is.na(warfarin_incomp_20$WT)]))
 
-# Do again, replace WT in warfarin_pk dataset with WT from warfarin_incomp by ID
+warfarin_pk_cc_30 <- warfarin_pk %>% filter(!(ID %in% warfarin_incomp_30$ID[is.na(warfarin_incomp_30$WT)]))
 
-warfarin_pk$WT <- ifelse(warfarin_pk$ID %in% warfarin_incomp$ID, 
-                            warfarin_incomp$WT[match(warfarin_pk$ID, warfarin_incomp$ID)], 
-                            warfarin_pk$WT)
+warfarin_pk_cc_50 <- warfarin_pk %>% filter(!(ID %in% warfarin_incomp_50$ID[is.na(warfarin_incomp_50$WT)]))
 
-# Then, replace NA in WT with -99
-
-warfarin_pk$WT <- ifelse(is.na(warfarin_pk$WT), -99, warfarin_pk$WT)
+warfarin_pk_cc_80 <- warfarin_pk %>% filter(!(ID %in% warfarin_incomp_80$ID[is.na(warfarin_incomp_80$WT)]))
 
 
 # Export it with the name warfarin_cc.csv
@@ -251,6 +322,16 @@ warfarin_pk$WT <- ifelse(is.na(warfarin_pk$WT), -99, warfarin_pk$WT)
 # So here I export as the beginning
 
 write.csv(warfarin_pk_cc, "warfarin_cc.csv",quote = F, row.names = F)
+
+# 040324 - Export different scenarios
+
+write.csv(warfarin_pk_cc_20, "warfarin_cc_20.csv",quote = F, row.names = F)
+
+write.csv(warfarin_pk_cc_30, "warfarin_cc_30.csv",quote = F, row.names = F)
+
+write.csv(warfarin_pk_cc_50, "warfarin_cc_50.csv",quote = F, row.names = F)
+
+write.csv(warfarin_pk_cc_80, "warfarin_cc_80.csv",quote = F, row.names = F)
 
 
 ## Third, median imputation ---------------------------------------------------
@@ -266,6 +347,58 @@ warfarin_pk$WT <- ifelse(is.na(warfarin_pk$WT), median(warfarin_pk_cc$WT), warfa
 # Export it with the name warfarin_med.csv
 
 write.csv(warfarin_pk, "warfarin_med.csv",quote = F, row.names = F)
+
+
+# 040324 - Replace missing WT with the median of observed WT for the 3 scenarios and export them
+
+
+# 20% missing WT
+
+warfarin_pk_20 <- warfarin_pk
+
+warfarin_pk_20$WT <- ifelse(warfarin_pk_20$ID %in% warfarin_incomp_20$ID, 
+                         warfarin_incomp_20$WT[match(warfarin_pk_20$ID, warfarin_incomp_20$ID)], 
+                         warfarin_pk_20$WT)
+
+warfarin_pk_20$WT <- ifelse(is.na(warfarin_pk_20$WT), median(warfarin_pk_cc_20$WT), warfarin_pk_20$WT)
+
+write.csv(warfarin_pk_20, "warfarin_med_20.csv",quote = F, row.names = F)
+
+# 30% missing WT
+
+warfarin_pk_30 <- warfarin_pk
+
+warfarin_pk_30$WT <- ifelse(warfarin_pk_30$ID %in% warfarin_incomp_30$ID, 
+                            warfarin_incomp_30$WT[match(warfarin_pk_30$ID, warfarin_incomp_30$ID)], 
+                            warfarin_pk_30$WT)
+
+warfarin_pk_30$WT <- ifelse(is.na(warfarin_pk_30$WT), median(warfarin_pk_cc_30$WT), warfarin_pk_30$WT)
+
+write.csv(warfarin_pk_30, "warfarin_med_30.csv",quote = F, row.names = F)
+
+# 50% missing WT
+
+warfarin_pk_50 <- warfarin_pk
+
+warfarin_pk_50$WT <- ifelse(warfarin_pk_50$ID %in% warfarin_incomp_50$ID, 
+                         warfarin_incomp_50$WT[match(warfarin_pk_50$ID, warfarin_incomp_50$ID)], 
+                         warfarin_pk_50$WT)
+
+warfarin_pk_50$WT <- ifelse(is.na(warfarin_pk_50$WT), median(warfarin_pk_cc_50$WT), warfarin_pk_50$WT)
+
+write.csv(warfarin_pk_50, "warfarin_med_50.csv",quote = F, row.names = F)
+
+# 80% missing WT
+
+warfarin_pk_80 <- warfarin_pk
+
+warfarin_pk_80$WT <- ifelse(warfarin_pk_80$ID %in% warfarin_incomp_80$ID, 
+                            warfarin_incomp_80$WT[match(warfarin_pk_80$ID, warfarin_incomp_80$ID)], 
+                            warfarin_pk_80$WT)
+
+warfarin_pk_80$WT <- ifelse(is.na(warfarin_pk_80$WT), median(warfarin_pk_cc_80$WT), warfarin_pk_80$WT)
+
+write.csv(warfarin_pk_80, "warfarin_med_80.csv",quote = F, row.names = F)
 
 
 ## Fourth, multiple imputation ------------------------------------------------
@@ -381,89 +514,328 @@ B_WT_V
 ## Note: Both WT_CL and WT_V are biased, probably because of the suboptimal imputation model.
 
 
-## Finetuning the imputation model 280224 ---------------------------------------
+## Finetuning the imputation model 280224 --------------------------------------
 
-# Add TIME, DV, AMT to the imputation model, in addition to SEX & AGE
+# MI scenario 03, 50% missing WT 060324 ----------------------------------------
 
-warfarin_impute <- warfarin_pk %>% select(ID, TIME, DV, AMT, SEX, AGE, WT)
+# Variables for the imputation model
+
+warfarin_impute_50 <- warfarin_pk %>% select(ID, TIME, DV, AMT, SEX, AGE, WT)
 
 # Change AMT and DV to numeric
 
-warfarin_impute$AMT <- as.numeric(warfarin_impute$AMT)
+warfarin_impute_50$AMT <- as.numeric(warfarin_impute_50$AMT)
 
-warfarin_impute$DV <- as.numeric(warfarin_impute$DV)
+warfarin_impute_50$DV <- as.numeric(warfarin_impute_50$DV)
 
 # Change SEX into factor
 
-warfarin_impute$SEX <- as.factor(warfarin_impute$SEX)
+warfarin_impute_50$SEX <- as.numeric(warfarin_impute_50$SEX)
 
-# Replace WT in warfarin_impute dataset with WT from warfarin_incomp by ID
+# Replace WT in warfarin_impute_50 dataset with WT from warfarin_incomp_50 by ID
 
-warfarin_impute$WT <- ifelse(warfarin_impute$ID %in% warfarin_incomp$ID, 
-                         warfarin_incomp$WT[match(warfarin_impute$ID, warfarin_incomp$ID)], 
-                         warfarin_impute$WT)
+warfarin_impute_50$WT <- ifelse(warfarin_impute_50$ID %in% warfarin_incomp_50$ID, 
+                             warfarin_incomp_50$WT[match(warfarin_impute_50$ID, warfarin_incomp_50$ID)], 
+                             warfarin_impute_50$WT)
 
-# Leave out ID from warfarin_impute
+# Leave out ID from warfarin_impute_50
 
-warfarin_impute <- warfarin_impute %>% select(-ID)
+warfarin_impute_50 <- warfarin_impute_50 %>% select(-ID)
 
-# Perform 60 imputations
+# Perform 50 imputations
 
-imp0 <- mice(warfarin_impute, maxit=0)
+imp0 <- mice(warfarin_impute_50, maxit=0)
 meth <- imp0$method
 meth["WT"] <- "norm"
 maxit <- 20
-nimp <- 60
-warfarin_imputed <- mice::mice(data=warfarin_impute,method=meth,
+nimp <- 50
+warfarin_imputed_50 <- mice::mice(data=warfarin_impute_50,method=meth,
                                maxit=maxit, m=nimp, printFlag = FALSE,
                                seed=123)
 
-# add imputed WT to warfarin_pk
+# add imputed WT to warfarin_pk_50
 
-for (i in 1:60) {
-  warfarin_pk[[paste0("WT", sprintf("%02d", i))]] <- (complete(warfarin_imputed, action = i))$WT
+for (i in 1:50) {
+  warfarin_pk_50[[paste0("WT", sprintf("%02d", i))]] <- (complete(warfarin_imputed_50, action = i))$WT
 }
 
-# Average WT01 to WT60 in warfarin_pk by ID 
+# Average WT01 to WT50 in warfarin_pk_50 by ID 
 
-WT01_60 <- warfarin_pk %>%
+WT01_50 <- warfarin_pk_50 %>%
   group_by(ID) %>%
-  summarise(across(WT01:WT60, mean, na.rm = TRUE))
+  summarise(across(WT01:WT50, mean, na.rm = TRUE))
 
-View(WT01_60)
+View(WT01_50)
 
-# Removing columns WT01 to WT60 from warfarin_pk
+# Removing columns WT01 to WT50 from warfarin_pk_50
 
-warfarin_pk <- warfarin_pk %>% select(-WT01:-WT60)
+warfarin_pk_50 <- warfarin_pk_50 %>% select(-WT01:-WT50)
 
-# Merge WT01_60 with warfarin_pk by ID
+# Merge WT01_50 with warfarin_pk_50 by ID
 
-warfarin_pk <- merge(warfarin_pk, WT01_60, by = "ID", all.x = TRUE)
+warfarin_pk_50 <- merge(warfarin_pk_50, WT01_50, by = "ID", all.x = TRUE)
 
 # Repeat the above steps from the rounding up one
 
-# Round up WT01 to WT60 in warfarin_pk to 1 significant digit
+# Round up WT01 to WT50 in warfarin_pk_50 to 1 significant digit
 
-for (i in 1:60) {
-  warfarin_pk[[paste0("WT", sprintf("%02d", i))]] <- round(warfarin_pk[[paste0("WT", sprintf("%02d", i))]], 1)
+for (i in 1:50) {
+  warfarin_pk_50[[paste0("WT", sprintf("%02d", i))]] <- round(warfarin_pk_50[[paste0("WT", sprintf("%02d", i))]], 1)
 }
 
-# Removing WT31 to WT60 columns in warfarin_pk dataframe to make warfarin_MI01 dataframe
+# Removing WT26 to WT50 columns in warfarin_pk_50 dataframe to make warfarin_MI_50_01 dataframe
 
-warfarin_MI01 <- warfarin_pk %>% select(-WT31:-WT60)
+warfarin_MI_50_01 <- warfarin_pk_50 %>% select(-WT26:-WT50)
 
-# Similarly, warfarin_MI02 is produced by removing WT01 to WT30 columns in warfarin_pk dataframe
+# Similarly, warfarin_MI_50_02 is produced by removing WT01 to WT25 columns in warfarin_pk_50 dataframe
 
-warfarin_MI02 <- warfarin_pk %>% select(-WT01:-WT30)
+warfarin_MI_50_02 <- warfarin_pk_50 %>% select(-WT01:-WT25)
 
-# Export it with the name warfarin_MI01.csv and warfarin_MI02.csv
+# Export it with the name warfarin_MI_50_01.csv and warfarin_MI_50_02.csv
 
-write.csv(warfarin_MI01, "warfarin_MI01.csv",quote = F, row.names = F)
+write.csv(warfarin_MI_50_01, "warfarin_MI_50_01.csv",quote = F, row.names = F)
 
-write.csv(warfarin_MI02, "warfarin_MI02.csv",quote = F, row.names = F)
+write.csv(warfarin_MI_50_02, "warfarin_MI_50_02.csv",quote = F, row.names = F)
 
 
-## Pooling parameters to check -------------------------------------------------
+# MI scenario 01, 20% missing WT -----------------------------------------------
+
+# Select variables for the imputation model
+
+warfarin_impute_20 <- warfarin_pk %>% select(ID, TIME, DV, AMT, SEX, AGE, WT)
+
+# Change AMT and DV to numeric
+
+warfarin_impute_20$AMT <- as.numeric(warfarin_impute_20$AMT)
+
+warfarin_impute_20$DV <- as.numeric(warfarin_impute_20$DV)
+
+# Change SEX into factor
+
+warfarin_impute_20$SEX <- as.numeric(warfarin_impute_20$SEX)
+
+# Replace WT in warfarin_impute_20 dataset with WT from warfarin_incomp_20 by ID
+
+warfarin_impute_20$WT <- ifelse(warfarin_impute_20$ID %in% warfarin_incomp_20$ID, 
+                             warfarin_incomp_20$WT[match(warfarin_impute_20$ID, warfarin_incomp_20$ID)], 
+                             warfarin_impute_20$WT)
+
+# Leave out ID from warfarin_impute_20
+
+warfarin_impute_20 <- warfarin_impute_20 %>% select(-ID)
+
+# Perform 20 imputations
+
+imp0 <- mice(warfarin_impute_20, maxit=0)
+meth <- imp0$method
+meth["WT"] <- "norm"
+maxit <- 20
+nimp <- 20
+warfarin_imputed_20 <- mice::mice(data=warfarin_impute_20,method=meth,
+                               maxit=maxit, m=nimp, printFlag = FALSE,
+                               seed=123)
+
+# add imputed WT to warfarin_pk_20
+
+for (i in 1:20) {
+  warfarin_pk_20[[paste0("WT", sprintf("%02d", i))]] <- (complete(warfarin_imputed_20, action = i))$WT
+}
+
+# Average WT01 to WT20 in warfarin_pk_20 by ID 
+
+WT01_20 <- warfarin_pk_20 %>%
+  group_by(ID) %>%
+  summarise(across(WT01:WT20, mean, na.rm = TRUE))
+
+View(WT01_20)
+
+# Removing columns WT01 to WT20 from warfarin_pk_20
+
+warfarin_pk_20 <- warfarin_pk_20 %>% select(-WT01:-WT20)
+
+# Merge WT01_20 with warfarin_pk_20 by ID
+
+warfarin_pk_20 <- merge(warfarin_pk_20, WT01_20, by = "ID", all.x = TRUE)
+
+# Round up WT01 to WT20 in warfarin_pk_20 to 1 significant digit
+
+for (i in 1:20) {
+  warfarin_pk_20[[paste0("WT", sprintf("%02d", i))]] <- round(warfarin_pk_20[[paste0("WT", sprintf("%02d", i))]], 1)
+}
+
+# Replace NA in WT with "."
+
+warfarin_pk_20[is.na(warfarin_pk_20)] <- "."
+
+# Export it with the name warfarin_MI_20.csv
+
+write.csv(warfarin_pk_20, "warfarin_MI_20.csv",quote = F, row.names = F)
+
+
+# MI scenario 02, 30% missing WT -----------------------------------------------
+
+# Select variables for the imputation model
+
+warfarin_impute_30 <- warfarin_pk %>% select(ID, TIME, DV, AMT, SEX, AGE, WT)
+
+# Change AMT and DV to numeric
+
+warfarin_impute_30$AMT <- as.numeric(warfarin_impute_30$AMT)
+
+warfarin_impute_30$DV <- as.numeric(warfarin_impute_30$DV)
+
+# Change SEX into factor
+
+warfarin_impute_30$SEX <- as.numeric(warfarin_impute_30$SEX)
+
+# Replace WT in warfarin_impute_30 dataset with WT from warfarin_incomp_30 by ID
+
+warfarin_impute_30$WT <- ifelse(warfarin_impute_30$ID %in% warfarin_incomp_30$ID, 
+                                warfarin_incomp_30$WT[match(warfarin_impute_30$ID, warfarin_incomp_30$ID)], 
+                                warfarin_impute_30$WT)
+
+# Leave out ID from warfarin_impute_30
+
+warfarin_impute_30 <- warfarin_impute_30 %>% select(-ID)
+
+# Perform 30 imputations
+
+imp0 <- mice(warfarin_impute_30, maxit=0)
+meth <- imp0$method
+meth["WT"] <- "norm"
+maxit <- 20
+nimp <- 30
+warfarin_imputed_30 <- mice::mice(data=warfarin_impute_30,method=meth,
+                                  maxit=maxit, m=nimp, printFlag = FALSE,
+                                  seed=123)
+
+# add imputed WT to warfarin_pk_30
+
+for (i in 1:30) {
+  warfarin_pk_30[[paste0("WT", sprintf("%02d", i))]] <- (complete(warfarin_imputed_30, action = i))$WT
+}
+
+# Average WT01 to WT30 in warfarin_pk_30 by ID 
+
+WT01_30 <- warfarin_pk_30 %>%
+  group_by(ID) %>%
+  summarise(across(WT01:WT30, mean, na.rm = TRUE))
+
+View(WT01_30)
+
+# Removing columns WT01 to WT30 from warfarin_pk_30
+
+warfarin_pk_30 <- warfarin_pk_30 %>% select(-WT01:-WT30)
+
+# Merge WT01_30 with warfarin_pk_30 by ID
+
+warfarin_pk_30 <- merge(warfarin_pk_30, WT01_30, by = "ID", all.x = TRUE)
+
+# Round up WT01 to WT30 in warfarin_pk_30 to 1 significant digit
+
+for (i in 1:30) {
+  warfarin_pk_30[[paste0("WT", sprintf("%02d", i))]] <- round(warfarin_pk_30[[paste0("WT", sprintf("%02d", i))]], 1)
+}
+
+# Replace NA in WT with "."
+
+warfarin_pk_30[is.na(warfarin_pk_30)] <- "."
+
+# Export it with the name warfarin_MI_30.csv
+
+write.csv(warfarin_pk_30, "warfarin_MI_30.csv",quote = F, row.names = F)
+
+
+# MI scenario 04, 80% missing WT -----------------------------------------------
+
+# Variables for the imputation model
+
+warfarin_impute_80 <- warfarin_pk %>% select(ID, TIME, DV, AMT, SEX, AGE, WT)
+
+# Change AMT and DV to numeric
+
+warfarin_impute_80$AMT <- as.numeric(warfarin_impute_80$AMT)
+
+warfarin_impute_80$DV <- as.numeric(warfarin_impute_80$DV)
+
+# Change SEX into factor
+
+warfarin_impute_80$SEX <- as.numeric(warfarin_impute_80$SEX)
+
+# Replace WT in warfarin_impute_80 dataset with WT from warfarin_incomp_80 by ID
+
+warfarin_impute_80$WT <- ifelse(warfarin_impute_80$ID %in% warfarin_incomp_80$ID, 
+                                warfarin_incomp_80$WT[match(warfarin_impute_80$ID, warfarin_incomp_80$ID)], 
+                                warfarin_impute_80$WT)
+
+# Leave out ID from warfarin_impute_80
+
+warfarin_impute_80 <- warfarin_impute_80 %>% select(-ID)
+
+# Perform 80 imputations
+
+imp0 <- mice(warfarin_impute_80, maxit=0)
+meth <- imp0$method
+meth["WT"] <- "norm"
+maxit <- 20
+nimp <- 80
+warfarin_imputed_80 <- mice::mice(data=warfarin_impute_80,method=meth,
+                                  maxit=maxit, m=nimp, printFlag = FALSE,
+                                  seed=123)
+
+# add imputed WT to warfarin_pk_80
+
+for (i in 1:80) {
+  warfarin_pk_80[[paste0("WT", sprintf("%02d", i))]] <- (complete(warfarin_imputed_80, action = i))$WT
+}
+
+# Average WT01 to WT80 in warfarin_pk_80 by ID 
+
+WT01_80 <- warfarin_pk_80 %>%
+  group_by(ID) %>%
+  summarise(across(WT01:WT80, mean, na.rm = TRUE))
+
+View(WT01_80)
+
+# Removing columns WT01 to WT80 from warfarin_pk_80
+
+warfarin_pk_80 <- warfarin_pk_80 %>% select(-WT01:-WT80)
+
+# Merge WT01_80 with warfarin_pk_80 by ID
+
+warfarin_pk_80 <- merge(warfarin_pk_80, WT01_80, by = "ID", all.x = TRUE)
+
+# Repeat the above steps from the rounding up one
+
+# Round up WT01 to WT80 in warfarin_pk_80 to 1 significant digit
+
+for (i in 1:80) {
+  warfarin_pk_80[[paste0("WT", sprintf("%02d", i))]] <- round(warfarin_pk_80[[paste0("WT", sprintf("%02d", i))]], 1)
+}
+
+# Removing WT26 to WT80 columns in warfarin_pk_80 dataframe to make warfarin_MI_80_01 dataframe
+
+warfarin_MI_80_01 <- warfarin_pk_80 %>% select(-WT26:-WT80)
+
+# Similarly, warfarin_MI_80_02 is produced by removing WT01 to WT25 and WT 51 to 80 columns in warfarin_pk_80 dataframe
+
+warfarin_MI_80_02 <- warfarin_pk_80 %>% select(-WT01:-WT25, -WT51:-WT80)
+
+# Lastly, warfarin_MI_80_03 is produced by removing WT01 to WT50 columns in warfarin_pk_80 dataframe
+
+warfarin_MI_80_03 <- warfarin_pk_80 %>% select(-WT01:-WT50)
+
+# Export it with the name warfarin_MI_80_01.csv, warfarin_MI_80_02.csv and warfarin_MI_80_03.csv
+
+write.csv(warfarin_MI_80_01, "warfarin_MI_80_01.csv",quote = F, row.names = F)
+
+write.csv(warfarin_MI_80_02, "warfarin_MI_80_02.csv",quote = F, row.names = F)
+
+write.csv(warfarin_MI_80_03, "warfarin_MI_80_03.csv",quote = F, row.names = F)
+
+# Pooling parameters to check -------------------------------------------------
+
+## My very first 60 imputations ------------------------------------------------
 
 # Read in the dataset
 setwd("C:/Users/u0164053/OneDrive - KU Leuven/PhD in KU Leuven/Projects/Multiple Imputation Tutorial in Pharmacometrics/Case study/MI")
@@ -473,7 +845,7 @@ Pooled_War<-read.csv("Pooled_War_Revised.csv",sep=",")
 Pooled_War$Var<-(Pooled_War$RSE*Pooled_War$Estimates/100)^2
 
 
-# Then, pooling WT_CL ----------------------------------------------------------
+# Then, pooling WT_CL 
 
 WT_CL<-mean(Pooled_War$Estimates[Pooled_War$Parameters == "WT_CL"]) #0.4794
 
@@ -522,7 +894,8 @@ lower_bound_WT_CL
 upper_bound_WT_CL
 
 
-# Then, pooling WT_V -----------------------------------------------------------
+
+# Then, pooling WT_V 
 
 WT_V<-mean(Pooled_War$Estimates[Pooled_War$Parameters == "WT_V"]) #0.4794
 
@@ -569,4 +942,336 @@ sqrt(T_WT_V)/WT_V*100 # 24%
 
 lower_bound_WT_V
 upper_bound_WT_V
+
+
+## For the 30% missing WT scenario ---------------------------------------------
+
+# Read in the dataset
+setwd("C:/Users/u0164053/OneDrive - KU Leuven/PhD in KU Leuven/Projects/Multiple Imputation Tutorial in Pharmacometrics/Case study/MI pooling/30% WT missing")
+Pooled_War_30<-read.csv("Pooled_War_30.csv",sep=",")
+
+# Creating Var (Variance) column 
+Pooled_War_30$Var<-(Pooled_War_30$RSE*Pooled_War_30$Estimates/100)^2
+
+
+# Then, pooling WT_CL 
+
+WT_CL<-mean(Pooled_War_30$Estimates[Pooled_War_30$Parameters == "WT_CL"]) #0.6358
+
+W_WT_CL<-mean(Pooled_War_30$Var[Pooled_War_30$Parameters == "WT_CL"]) #0.08308769 #within imputation variance
+
+B_WT_CL<-var(Pooled_War_30$Estimates[Pooled_War_30$Parameters == "WT_CL"]) #0.004717062 #between imputation variance
+
+WT_CL # 0.60028
+W_WT_CL
+B_WT_CL
+
+# Total variance
+
+m<-30
+T_WT_CL<-W_WT_CL+(1+1/m)*B_WT_CL #0.08796199
+T_WT_CL
+
+# Confidence interval - T distribution
+
+m<-30 #number of imputations
+k<-12 #my model has 12 parameters (including 6 fixed effects parameters and 6 random effect)
+n<-32
+
+lambda_WT_CL<-(B_WT_CL+B_WT_CL/m)/T_WT_CL #proportion of variation attributable to the missing data
+
+r_WT_CL<-(lambda_WT_CL)/(1-lambda_WT_CL) #relative increase in variance due to nonresponse
+
+v_old_WT_CL<-(m-1)*(1+1/r_WT_CL^2) #old degree of freedom
+
+v_com=n-k #degree of freedom of parameter estimate (WT_CL) in the hypothetically complete data
+
+v_obs_WT_CL=((v_com+1)/(v_com+3))*v_com*(1-lambda_WT_CL) #observed data degrees of freedom that accounts for the missing information
+
+v_WT_CL<-(v_old_WT_CL*v_obs_WT_CL)/(v_old_WT_CL+v_obs_WT_CL)
+
+t_crit_WT_CL <- qt(0.975, v_WT_CL) 
+
+lower_bound_WT_CL<-WT_CL-t_crit_WT_CL*sqrt(T_WT_CL) #1.425197
+upper_bound_WT_CL<-WT_CL+t_crit_WT_CL*sqrt(T_WT_CL) #1.958517
+
+# Here I approximate it with normal distribution to calculate RSE
+
+sqrt(T_WT_CL)/WT_CL*100 #46.64735%
+
+lower_bound_WT_CL
+upper_bound_WT_CL
+# Final result: 0.6358 (46.64735%)
+
+
+# Then, pooling WT_V
+
+WT_V<-mean(Pooled_War_30$Estimates[Pooled_War_30$Parameters == "WT_V"]) #1.085667
+
+W_WT_V<-mean(Pooled_War_30$Var[Pooled_War_30$Parameters == "WT_V"]) #0.02165006 #within imputation variance
+
+B_WT_V<-var(Pooled_War_30$Estimates[Pooled_War_30$Parameters == "WT_V"]) #0.001411609 #between imputation variance
+
+WT_V # 1.085667
+W_WT_V
+B_WT_V
+
+# Total variance
+
+m<-30
+T_WT_V<-W_WT_V+(1+1/m)*B_WT_V #0.02310873
+T_WT_V
+
+# Confidence interval - T distribution
+
+m<-30 #number of imputations
+k<-12 #my model has 12 parameters (including 6 fixed effects parameters and 6 random effect)
+n<-32
+
+lambda_WT_V<-(B_WT_V+B_WT_V/m)/T_WT_V #proportion of variation attributable to the missing data
+
+r_WT_V<-(lambda_WT_V)/(1-lambda_WT_V) #relative increase in variance due to nonresponse
+
+v_old_WT_V<-(m-1)*(1+1/r_WT_V^2) #old degree of freedom
+
+v_com=n-k #degree of freedom of parameter estimate (WT_V) in the hypothetically complete data
+
+v_obs_WT_V=((v_com+1)/(v_com+3))*v_com*(1-lambda_WT_V) #observed data degrees of freedom that accounts for the missing information
+
+v_WT_V<-(v_old_WT_V*v_obs_WT_V)/(v_old_WT_V+v_obs_WT_V)
+
+t_crit_WT_V <- qt(0.975, v_WT_V) 
+
+lower_bound_WT_V<-WT_V-t_crit_WT_V*sqrt(T_WT_V) 
+upper_bound_WT_V<-WT_V+t_crit_WT_V*sqrt(T_WT_V) 
+
+# Here I approximate it with normal distribution to calculate RSE
+
+sqrt(T_WT_V)/WT_V*100 # 14.0% 
+
+lower_bound_WT_V
+upper_bound_WT_V
+# Final result: 1.085667 (14.0%)
+
+
+## For the 50% missing WT scenario ---------------------------------------------
+
+# Read in the dataset, remove NA
+setwd("C:/Users/u0164053/OneDrive - KU Leuven/PhD in KU Leuven/Projects/Multiple Imputation Tutorial in Pharmacometrics/Case study/MI pooling/50% WT missing")
+Pooled_War_50<-read.csv("Pooled_War_50.csv",sep=",")
+Pooled_War_50<-na.omit(Pooled_War_50) # Here I will remove NAs, which mean paramter estimates from non-converged models
+
+# Creating Var (Variance) column 
+Pooled_War_50$Var<-(Pooled_War_50$RSE*Pooled_War_50$Estimates/100)^2
+
+
+# Then, pooling WT_CL 
+
+WT_CL<-mean(Pooled_War_50$Estimates[Pooled_War_50$Parameters == "WT_CL"]) #0.612551
+
+W_WT_CL<-mean(Pooled_War_50$Var[Pooled_War_50$Parameters == "WT_CL"]) #within imputation variance
+
+B_WT_CL<-var(Pooled_War_50$Estimates[Pooled_War_50$Parameters == "WT_CL"]) #between imputation variance
+
+WT_CL 
+W_WT_CL
+B_WT_CL
+
+# Total variance
+
+m<-49
+T_WT_CL<-W_WT_CL+(1+1/m)*B_WT_CL 
+T_WT_CL
+
+# Confidence interval - T distribution
+
+m<-49 #number of imputations
+k<-12 #my model has 12 parameters (including 6 fixed effects parameters and 6 random effect)
+n<-32
+
+lambda_WT_CL<-(B_WT_CL+B_WT_CL/m)/T_WT_CL #proportion of variation attributable to the missing data
+
+r_WT_CL<-(lambda_WT_CL)/(1-lambda_WT_CL) #relative increase in variance due to nonresponse
+
+v_old_WT_CL<-(m-1)*(1+1/r_WT_CL^2) #old degree of freedom
+
+v_com=n-k #degree of freedom of parameter estimate (WT_CL) in the hypothetically complete data
+
+v_obs_WT_CL=((v_com+1)/(v_com+3))*v_com*(1-lambda_WT_CL) #observed data degrees of freedom that accounts for the missing information
+
+v_WT_CL<-(v_old_WT_CL*v_obs_WT_CL)/(v_old_WT_CL+v_obs_WT_CL)
+
+t_crit_WT_CL <- qt(0.975, v_WT_CL) 
+
+lower_bound_WT_CL<-WT_CL-t_crit_WT_CL*sqrt(T_WT_CL) 
+upper_bound_WT_CL<-WT_CL+t_crit_WT_CL*sqrt(T_WT_CL) 
+
+# Here I approximate it with normal distribution to calculate RSE
+
+sqrt(T_WT_CL)/WT_CL*100 #45.5612%
+
+lower_bound_WT_CL
+upper_bound_WT_CL
+# Final result: 0.612551 (45.5612%)
+
+
+# Then, pooling WT_V
+
+WT_V<-mean(Pooled_War_50$Estimates[Pooled_War_50$Parameters == "WT_V"]) #0.8474082
+
+W_WT_V<-mean(Pooled_War_50$Var[Pooled_War_50$Parameters == "WT_V"]) #within imputation variance
+
+B_WT_V<-var(Pooled_War_50$Estimates[Pooled_War_50$Parameters == "WT_V"]) #between imputation variance
+
+WT_V 
+W_WT_V
+B_WT_V
+
+# Total variance
+
+m<-49
+T_WT_V<-W_WT_V+(1+1/m)*B_WT_V 
+T_WT_V
+
+# Confidence interval - T distribution
+
+m<-49 #number of imputations
+k<-12 #my model has 12 parameters (including 6 fixed effects parameters and 6 random effect)
+n<-32
+
+lambda_WT_V<-(B_WT_V+B_WT_V/m)/T_WT_V #proportion of variation attributable to the missing data
+
+r_WT_V<-(lambda_WT_V)/(1-lambda_WT_V) #relative increase in variance due to nonresponse
+
+v_old_WT_V<-(m-1)*(1+1/r_WT_V^2) #old degree of freedom
+
+v_com=n-k #degree of freedom of parameter estimate (WT_V) in the hypothetically complete data
+
+v_obs_WT_V=((v_com+1)/(v_com+3))*v_com*(1-lambda_WT_V) #observed data degrees of freedom that accounts for the missing information
+
+v_WT_V<-(v_old_WT_V*v_obs_WT_V)/(v_old_WT_V+v_obs_WT_V)
+
+t_crit_WT_V <- qt(0.975, v_WT_V) 
+
+lower_bound_WT_V<-WT_V-t_crit_WT_V*sqrt(T_WT_V) 
+upper_bound_WT_V<-WT_V+t_crit_WT_V*sqrt(T_WT_V) 
+
+# Here I approximate it with normal distribution to calculate RSE
+
+sqrt(T_WT_V)/WT_V*100 # 22.5247% 
+
+lower_bound_WT_V
+upper_bound_WT_V
+# Final result: 0.8474082 (22.5247%)
+
+
+## For the 80% missing WT scenario ---------------------------------------------
+
+# Read in the dataset, remove NA
+setwd("C:/Users/u0164053/OneDrive - KU Leuven/PhD in KU Leuven/Projects/Multiple Imputation Tutorial in Pharmacometrics/Case study/MI pooling/80% WT missing")
+Pooled_War_80<-read.csv("Pooled_War_80.csv",sep=",")
+Pooled_War_80<-na.omit(Pooled_War_80) # Here I will remove NAs, which mean paramter estimates from non-converged models
+
+# Creating Var (Variance) column 
+Pooled_War_80$Var<-(Pooled_War_80$RSE*Pooled_War_80$Estimates/100)^2
+
+
+# Then, pooling WT_CL 
+
+WT_CL<-mean(Pooled_War_80$Estimates[Pooled_War_80$Parameters == "WT_CL"]) #0.3210117
+
+W_WT_CL<-mean(Pooled_War_80$Var[Pooled_War_80$Parameters == "WT_CL"]) #within imputation variance
+
+B_WT_CL<-var(Pooled_War_80$Estimates[Pooled_War_80$Parameters == "WT_CL"]) #between imputation variance
+
+WT_CL 
+W_WT_CL
+B_WT_CL
+
+# Total variance
+
+m<-73
+T_WT_CL<-W_WT_CL+(1+1/m)*B_WT_CL 
+T_WT_CL
+
+# Confidence interval - T distribution
+
+m<-73 #number of imputations
+k<-12 #my model has 12 parameters (including 6 fixed effects parameters and 6 random effect)
+n<-32
+
+lambda_WT_CL<-(B_WT_CL+B_WT_CL/m)/T_WT_CL #proportion of variation attributable to the missing data
+
+r_WT_CL<-(lambda_WT_CL)/(1-lambda_WT_CL) #relative increase in variance due to nonresponse
+
+v_old_WT_CL<-(m-1)*(1+1/r_WT_CL^2) #old degree of freedom
+
+v_com=n-k #degree of freedom of parameter estimate (WT_CL) in the hypothetically complete data
+
+v_obs_WT_CL=((v_com+1)/(v_com+3))*v_com*(1-lambda_WT_CL) #observed data degrees of freedom that accounts for the missing information
+
+v_WT_CL<-(v_old_WT_CL*v_obs_WT_CL)/(v_old_WT_CL+v_obs_WT_CL)
+
+t_crit_WT_CL <- qt(0.975, v_WT_CL) 
+
+lower_bound_WT_CL<-WT_CL-t_crit_WT_CL*sqrt(T_WT_CL) #1.425197
+upper_bound_WT_CL<-WT_CL+t_crit_WT_CL*sqrt(T_WT_CL) #1.958517
+
+# Here I approximate it with normal distribution to calculate RSE
+
+sqrt(T_WT_CL)/WT_CL*100 #158.6361%
+
+lower_bound_WT_CL
+upper_bound_WT_CL
+# Final result: 0.3210117 (158.6361%)
+
+
+# Then, pooling WT_V
+
+WT_V<-mean(Pooled_War_80$Estimates[Pooled_War_80$Parameters == "WT_V"]) #0.9687808
+
+W_WT_V<-mean(Pooled_War_80$Var[Pooled_War_80$Parameters == "WT_V"]) #within imputation variance
+
+B_WT_V<-var(Pooled_War_80$Estimates[Pooled_War_80$Parameters == "WT_V"]) #between imputation variance
+
+WT_V 
+W_WT_V
+B_WT_V
+
+# Total variance
+
+m<-73
+T_WT_V<-W_WT_V+(1+1/m)*B_WT_V 
+T_WT_V
+
+# Confidence interval - T distribution
+
+m<-73 #number of imputations
+k<-12 #my model has 12 parameters (including 6 fixed effects parameters and 6 random effect)
+n<-32
+
+lambda_WT_V<-(B_WT_V+B_WT_V/m)/T_WT_V #proportion of variation attributable to the missing data
+
+r_WT_V<-(lambda_WT_V)/(1-lambda_WT_V) #relative increase in variance due to nonresponse
+
+v_old_WT_V<-(m-1)*(1+1/r_WT_V^2) #old degree of freedom
+
+v_com=n-k #degree of freedom of parameter estimate (WT_V) in the hypothetically complete data
+
+v_obs_WT_V=((v_com+1)/(v_com+3))*v_com*(1-lambda_WT_V) #observed data degrees of freedom that accounts for the missing information
+
+v_WT_V<-(v_old_WT_V*v_obs_WT_V)/(v_old_WT_V+v_obs_WT_V)
+
+t_crit_WT_V <- qt(0.975, v_WT_V) 
+
+lower_bound_WT_V<-WT_V-t_crit_WT_V*sqrt(T_WT_V) 
+upper_bound_WT_V<-WT_V+t_crit_WT_V*sqrt(T_WT_V) 
+
+# Here I approximate it with normal distribution to calculate RSE
+
+sqrt(T_WT_V)/WT_V*100 # 32.35046% 
+
+lower_bound_WT_V
+upper_bound_WT_V
+# Final result: 0.9687808 (32.35046%)
 
