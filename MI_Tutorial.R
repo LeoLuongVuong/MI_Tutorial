@@ -38,7 +38,7 @@ lambda <- 0.5
 X.complete.discr <- rpois(n, lambda)
 
 n.cat <- 5
-X.complete.cat <- rbinom(n, size=5, prob = 0.5)
+X.complete.cat <- rbinom(n, size = 5, prob = 0.5)
 
 X.complete <- data.frame(cbind(X.complete.cont, X.complete.discr, X.complete.cat))
 X.complete[,4] <- as.factor(X.complete[,4])
