@@ -30,27 +30,27 @@ Mean_diff <- MI_casestudy |>
                                            "WT_Vd" = "Body weight on Vd")
   )) +
   theme_bw() +
-  scale_fill_manual(values = c("#056CF2", "#24B0BF", "#F29F05")) +
+  scale_fill_manual(values = c("#00407A", "#1E8DB0", "#F27405")) +
   xlab("Missing body weight (%)") +
   ylab("Relative bias (%)") +
   scale_y_continuous(limits = c(-110, 50), 
                      breaks = seq(-110, 50, by = 10), 
                      expand = c(0,0),
                      labels = scales::comma) +
-  theme(strip.text.x = element_text(hjust = 0.5, size = 8, face = "bold", family = "sans", color = "#032F40"), # following Nature: label: 8 pt, other text: 7 pt, min: 5 pt
-        strip.text.y = element_text(vjust = 0.5, size = 8, face = "bold", family = "sans", color = "#032F40"),
+  theme(strip.text.x = element_text(hjust = 0.5, size = 8, face = "bold", family = "sans", color = "#00407A"), # following Nature: label: 8 pt, other text: 7 pt, min: 5 pt
+        strip.text.y = element_text(vjust = 0.5, size = 8, face = "bold", family = "sans", color = "#00407A"),
         strip.background = element_rect(fill = "#F27405"),
-        axis.title = element_text(size = 7, family = "sans", color = "#032F40"),
-        axis.text = element_text(size = 7, family = "sans", color = "#032F40"),
-        legend.title = element_text(size = 6, family = "sans", color = "#032F40"),
-        legend.text = element_text(size = 6, family = "sans", color = "#032F40"),
+        axis.title = element_text(size = 7, family = "sans", color = "#00407A"),
+        axis.text = element_text(size = 7, family = "sans", color = "#00407A"),
+        legend.title = element_text(size = 6, family = "sans", color = "#00407A"),
+        legend.text = element_text(size = 6, family = "sans", color = "#00407A"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(color = "#032F40"),
+        panel.background = element_rect(color = "#00407A"),
         #legend.margin = margin(0, 0, 0, 0),
         legend.box.spacing = unit(0.2, 'cm'),
         legend.box.margin = unit(0.1, 'cm')) +
-  geom_hline(yintercept = c(-10, 0, 10), linetype = "dashed", color = "#032F40", size = 0.6)
+  geom_hline(yintercept = c(-10, 0, 10), linetype = "dashed", color = "#00407A", size = 0.6)
 
 Mean_diff
 
@@ -76,7 +76,7 @@ RSE <- MI_casestudy |>
                                                  "WT_Vd" = "Body weight on Vd")
   )) +
   theme_bw() +
-  scale_fill_manual(values = c("#056CF2", "#24B0BF", "#F29F05")) +
+  scale_fill_manual(values = c("#00407A", "#1E8DB0", "#F27405")) +
   xlab("Missing body weight (%)") +
   ylab("Relative standard error (%)") +
   scale_y_continuous(limits = c(0, 850), 
@@ -85,23 +85,23 @@ RSE <- MI_casestudy |>
   scale_y_break(breaks = c(200, 750), expand = FALSE, space = 0.2, scales = "fixed") +
   #scale_y_cut(breaks = c(200, 750)) +
   #scale_y_break(breaks = c(200, 750)) +
-  theme(strip.text.x = element_text(hjust = 0.5, size = 8, face = "bold", family = "sans", color = "#032F40"), # following Nature: label: 8 pt, other text: 7 pt, min: 5 pt
-        strip.text.y = element_text(vjust = 0.5, size = 8, face = "bold", family = "sans", color = "#032F40"),
+  theme(strip.text.x = element_text(hjust = 0.5, size = 8, face = "bold", family = "sans", color = "#00407A"), # following Nature: label: 8 pt, other text: 7 pt, min: 5 pt
+        strip.text.y = element_text(vjust = 0.5, size = 8, face = "bold", family = "sans", color = "#00407A"),
         strip.background = element_rect(fill = "#F27405"),
         axis.text.y.right = element_blank(),
         axis.line.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title = element_text(size = 7, family = "sans", color = "#032F40"),
-        axis.text = element_text(size = 7, family = "sans", color = "#032F40"),
-        legend.title = element_text(size = 6, family = "sans", color = "#032F40"),
-        legend.text = element_text(size = 6, family = "sans", color = "#032F40"),
+        axis.title = element_text(size = 7, family = "sans", color = "#00407A"),
+        axis.text = element_text(size = 7, family = "sans", color = "#00407A"),
+        legend.title = element_text(size = 6, family = "sans", color = "#00407A"),
+        legend.text = element_text(size = 6, family = "sans", color = "#00407A"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(color = "#032F40"),
+        panel.background = element_rect(color = "#00407A"),
         #legend.margin = margin(0, 0, 0, 0),
         legend.box.spacing = unit(0.2, 'cm'),
         legend.box.margin = unit(0.1, 'cm')) +
-  geom_hline(yintercept = 50, linetype = "dashed", color = "#032F40", size = 0.6)
+  geom_hline(yintercept = 50, linetype = "dashed", color = "#00407A", size = 0.6)
 RSE
 
 # export the plot
